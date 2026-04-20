@@ -162,7 +162,7 @@ export default function App() {
       <Header user={user} familyId={familyId} />
       <Nav tabs={TABS} active={tab} onChange={setTab} />
       <div className="app-main">
-        {tab === 'Overblik'   && <Overblik   roles={roles} setRoles={setRoles} todos={todos} setTodos={setTodos} />}
+        {tab === 'Overblik'   && <Overblik   todos={todos} setTodos={setTodos} processes={processes} setProcesses={setProcesses} />}
         {tab === 'Domæner'    && <Domaener   roles={roles} />}
         {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} />}
         {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} />}
