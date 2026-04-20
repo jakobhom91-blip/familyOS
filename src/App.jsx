@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 
@@ -56,8 +56,11 @@ export default function App() {
   const [links,       setLinks]       = useState(DEFAULT_LINKS)
   const [contacts,    setContacts]    = useState(DEFAULT_CONTACTS)
 
-  // --- 1. Lyt på auth-tilstand ---
+  // --- 1. Håndter redirect-resultat + lyt på auth-tilstand ---
   useEffect(() => {
+    // Håndter redirect-login resultat (kører én gang ved page load)
+    getRedirectResult(auth).catch(err => console.error('Redirect result fejl:', err))
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null)
