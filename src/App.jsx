@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth'
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 
@@ -57,34 +57,27 @@ export default function App() {
   const [links,       setLinks]       = useState(DEFAULT_LINKS)
   const [contacts,    setContacts]    = useState(DEFAULT_CONTACTS)
 
-  // --- 1. Håndter redirect-resultat + lyt på auth-tilstand ---
+  // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
-    let unsubAuth = () => {}
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null)
+        setFamilyId(null)
+        setDataReady(false)
+        return
+      }
+      setUser(firebaseUser)
 
-    getRedirectResult(auth)
-      .catch(err => console.error('Redirect result fejl:', err))
-      .finally(() => {
-        unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-          if (!firebaseUser) {
-            setUser(null)
-            setFamilyId(null)
-            setDataReady(false)
-            return
-          }
-          setUser(firebaseUser)
-
-          // Tjek om bruger har en familie
-          const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
-          if (userSnap.exists() && userSnap.data().familyId) {
-            setFamilyId(userSnap.data().familyId)
-          } else {
-            setFamilyId(null)
-            setDataReady(false)
-          }
-        })
-      })
-
-    return () => unsubAuth()
+      // Tjek om bruger har en familie
+      const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
+      if (userSnap.exists() && userSnap.data().familyId) {
+        setFamilyId(userSnap.data().familyId)
+      } else {
+        setFamilyId(null)
+        setDataReady(false)
+      }
+    })
+    return unsub
   }, [])
 
   // --- 2. Lyt på Firestore data når familyId er klar ---

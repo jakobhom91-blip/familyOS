@@ -1,14 +1,13 @@
-import { signInWithRedirect } from 'firebase/auth'
+import { signInWithPopup } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase.js'
 
 export default function LoginScreen() {
-  async function handleLogin() {
-    try {
-      await signInWithRedirect(auth, googleProvider)
-    } catch (err) {
-      console.error('Login fejlede:', err)
-      alert('Login fejlede. Prøv igen.')
-    }
+  function handleLogin() {
+    signInWithPopup(auth, googleProvider)
+      .catch(err => {
+        console.error('Login fejlede:', err)
+        alert('Login fejlede. Prøv igen.')
+      })
   }
 
   return (
