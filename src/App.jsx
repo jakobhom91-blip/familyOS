@@ -3,6 +3,7 @@ import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 
+import Domaener from './components/Domaener.jsx'
 import Header from './components/Header.jsx'
 import Nav from './components/Nav.jsx'
 import Overblik from './components/Overblik.jsx'
@@ -23,7 +24,7 @@ import {
   DEFAULT_LINKS, DEFAULT_CONTACTS,
 } from './data/defaults.js'
 
-const TABS = ['Overblik','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter']
+const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter']
 
 // Debounce hjælper — undgår at skrive til Firestore på hvert enkelt tastetryk
 function useDebounce(value, delay) {
@@ -162,6 +163,7 @@ export default function App() {
       <Nav tabs={TABS} active={tab} onChange={setTab} />
       <div className="app-main">
         {tab === 'Overblik'   && <Overblik   roles={roles} setRoles={setRoles} todos={todos} setTodos={setTodos} />}
+        {tab === 'Domæner'    && <Domaener   roles={roles} />}
         {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} />}
         {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} />}
         {tab === 'Økonomi'    && <Oekonomi   budgetTotal={budgetTotal} setBudgetTotal={setBudgetTotal} budgetPosts={budgetPosts} setBudgetPosts={setBudgetPosts} />}

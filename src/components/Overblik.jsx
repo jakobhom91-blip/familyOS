@@ -15,16 +15,6 @@ function Badge({ owner }) {
   )
 }
 
-function RoleCard({ role }) {
-  return (
-    <div className={`role-card role-card--${role.color}`}>
-      <div className="role-card__label">{role.label}</div>
-      <div className="role-card__sub">{role.sub}</div>
-      <div className="role-card__badge">{role.owner}</div>
-    </div>
-  )
-}
-
 function TodoList({ who, items, setTodos }) {
   const [input, setInput] = useState('')
   const label = who === 'jakob' ? 'Jakob' : who === 'camilla' ? 'Camilla' : 'Fælles'
@@ -77,23 +67,17 @@ function TodoList({ who, items, setTodos }) {
   )
 }
 
-export default function Overblik({ roles, todos, setTodos }) {
+export default function Overblik({ todos, setTodos }) {
   return (
     <>
-      {/* Rolle-kort */}
-      <div className="section">
-        <div className="section__header">
-          <div className="section__title">Roller & domæner</div>
-        </div>
-        <div className="role-grid">
-          {roles.map(r => <RoleCard key={r.id} role={r} />)}
-        </div>
-      </div>
-
-      {/* To-do lister */}
-      <TodoList who="jakob"   items={todos.jakob}   setTodos={setTodos} />
-      <TodoList who="camilla" items={todos.camilla} setTodos={setTodos} />
+      {/* Fælles øverst */}
       <TodoList who="begge"   items={todos.begge}   setTodos={setTodos} />
+
+      {/* Jakob & Camilla side om side */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <TodoList who="jakob"   items={todos.jakob}   setTodos={setTodos} />
+        <TodoList who="camilla" items={todos.camilla} setTodos={setTodos} />
+      </div>
     </>
   )
 }
