@@ -160,7 +160,7 @@ export default function App() {
       <Nav tabs={TABS} active={tab} onChange={setTab} />
       <div className="app-main">
         {tab === 'Overblik'   && <Overblik   todos={todos} setTodos={setTodos} processes={processes} setProcesses={setProcesses} />}
-        {tab === 'Domæner'    && <Domaener   roles={roles} />}
+        {tab === 'Domæner'    && <Domaener   roles={roles} setRoles={setRoles} />}
         {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} />}
         {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} />}
         {tab === 'Økonomi'    && <Oekonomi   budgetTotal={budgetTotal} setBudgetTotal={setBudgetTotal} budgetPosts={budgetPosts} setBudgetPosts={setBudgetPosts} />}

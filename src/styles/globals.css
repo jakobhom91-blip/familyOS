@@ -43,6 +43,18 @@
   --rc-glod-text:   #5C3D00;
   --rc-slate-bg:    #EEECEA;
   --rc-slate-text:  #2D2D2D;
+  --rc-rose-bg:     #FCE8EE;
+  --rc-rose-text:   #8C1A3A;
+  --rc-navy-bg:     #E0E6F0;
+  --rc-navy-text:   #0D2259;
+  --rc-sand-bg:     #F5EFE4;
+  --rc-sand-text:   #5C4A28;
+  --rc-lavender-bg: #EDE8F7;
+  --rc-lavender-text:#3D2472;
+  --rc-moss-bg:     #E8EFE0;
+  --rc-moss-text:   #2E4A1A;
+  --rc-coral-bg:    #FDE8E0;
+  --rc-coral-text:  #8C2E10;
 }
 
 * {
@@ -271,6 +283,12 @@ h1, h2, h3 {
 .role-card--turkis { background: var(--rc-turkis-bg); color: var(--rc-turkis-text); }
 .role-card--glod   { background: var(--rc-glod-bg);   color: var(--rc-glod-text); }
 .role-card--slate  { background: var(--rc-slate-bg);  color: var(--rc-slate-text); }
+.role-card--rose     { background: var(--rc-rose-bg);     color: var(--rc-rose-text); }
+.role-card--navy     { background: var(--rc-navy-bg);     color: var(--rc-navy-text); }
+.role-card--sand     { background: var(--rc-sand-bg);     color: var(--rc-sand-text); }
+.role-card--lavender { background: var(--rc-lavender-bg); color: var(--rc-lavender-text); }
+.role-card--moss     { background: var(--rc-moss-bg);     color: var(--rc-moss-text); }
+.role-card--coral    { background: var(--rc-coral-bg);    color: var(--rc-coral-text); }
 
 .role-card--petrol .role-card__badge { background: rgba(1,49,56,.15); }
 .role-card--forest .role-card__badge { background: rgba(47,93,80,.15); }
@@ -278,6 +296,12 @@ h1, h2, h3 {
 .role-card--turkis .role-card__badge { background: rgba(93,211,192,.25); }
 .role-card--glod   .role-card__badge { background: rgba(251,232,190,.6); }
 .role-card--slate  .role-card__badge { background: rgba(45,45,45,.1); }
+.role-card--rose     .role-card__badge { background: rgba(140,26,58,.12); }
+.role-card--navy     .role-card__badge { background: rgba(13,34,89,.12); }
+.role-card--sand     .role-card__badge { background: rgba(92,74,40,.12); }
+.role-card--lavender .role-card__badge { background: rgba(61,36,114,.12); }
+.role-card--moss     .role-card__badge { background: rgba(46,74,26,.12); }
+.role-card--coral    .role-card__badge { background: rgba(140,46,16,.12); }
 
 /* ---- Todo rows ---- */
 .todo-row {
