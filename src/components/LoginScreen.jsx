@@ -1,13 +1,19 @@
-import { signInWithPopup } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase.js'
+
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
 export default function LoginScreen() {
   function handleLogin() {
-    signInWithPopup(auth, googleProvider)
-      .catch(err => {
-        console.error('Login fejlede:', err)
-        alert('Login fejlede. Prøv igen.')
-      })
+    if (isMobile) {
+      signInWithRedirect(auth, googleProvider)
+    } else {
+      signInWithPopup(auth, googleProvider)
+        .catch(err => {
+          console.error('Login fejlede:', err)
+          alert('Login fejlede. Prøv igen.')
+        })
+    }
   }
 
   return (

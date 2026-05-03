@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 
@@ -61,6 +61,9 @@ export default function App() {
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
+    // Håndter mobil redirect-result passivt (kører én gang ved page load)
+    getRedirectResult(auth).catch(err => console.error('Redirect result fejl:', err))
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null)
