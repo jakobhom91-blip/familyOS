@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase.js'
+import { signOut } from 'firebase/auth'
+import { db, auth } from '../firebase.js'
 import {
   DEFAULT_ROLES, DEFAULT_TODOS, DEFAULT_WEEK_EVENTS, DEFAULT_MONTH_EVENTS,
   DEFAULT_SHOPPING, DEFAULT_BUDGET_TOTAL, DEFAULT_BUDGET_POSTS,
@@ -104,6 +105,10 @@ export default function FamilySetup({ user }) {
         <h1 style={styles.title}>Velkommen, {user.displayName?.split(' ')[0]}</h1>
         <p style={styles.sub}>Opret en ny familie eller tilslut dig en eksisterende med en familiekode</p>
 
+        <button style={styles.btnLogOut} onClick={() => signOut(auth)}>
+          Forkert konto? Log ud
+        </button>
+
         {!mode && (
           <div style={styles.btnGroup}>
             <button style={styles.btnPrimary} onClick={() => setMode('opret')}>
@@ -203,4 +208,9 @@ const styles = {
     letterSpacing: 2, boxSizing: 'border-box',
   },
   fejl: { color: '#c0392b', fontSize: 14, margin: 0 },
+  btnLogOut: {
+    background: 'none', border: 'none', color: '#aaa',
+    fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
+    marginBottom: 16, padding: 0,
+  },
 }
