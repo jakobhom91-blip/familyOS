@@ -25,7 +25,7 @@ import {
   DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT, DEFAULT_SHOPPING_HISTORY,
 } from './data/defaults.js'
 
-const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter','Vault']
+const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Vault']
 
 // Debounce hjælper — undgår at skrive til Firestore på hvert enkelt tastetryk
 function useDebounce(value, delay) {
@@ -179,7 +179,6 @@ export default function App() {
         {tab === 'Processer'  && <Processer  processes={processes} setProcesses={setProcesses} />}
         {tab === 'Husmøde'    && <Husmøde    agreements={agreements} setAgreements={setAgreements} meetings={meetings} setMeetings={setMeetings} />}
         {tab === 'Links'      && <Links      links={links} setLinks={setLinks} />}
-        {tab === 'Kontakter'  && <Kontakter  contacts={contacts} setContacts={setContacts} />}
         {tab === 'Vault'      && <Vault      vault={vault} setVault={setVault} />}
       </div>
     </div>

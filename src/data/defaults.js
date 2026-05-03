@@ -172,25 +172,30 @@ export const DEFAULT_SHOPPING_HISTORY = {
 }
 
 // ---- Vault ----
-// categories: array af { id, name, logins: [{ id, name, username, password, url }] }
 export const DEFAULT_VAULT = [
   {
     id: 1,
     name: 'Skole',
     logins: [
-      { id: 1, name: 'Aula', username: '', password: '', url: 'https://www.aula.dk' },
+      { id: 1, name: 'Aula', username: '', password: '', url: 'https://www.aula.dk', note: '' },
     ],
   },
   {
     id: 2,
     name: 'Streaming',
     logins: [
-      { id: 1, name: 'Netflix', username: '', password: '', url: 'https://www.netflix.com' },
+      { id: 1, name: 'Netflix', username: '', password: '', url: 'https://www.netflix.com', note: '' },
+      { id: 2, name: 'Disney+', username: '', password: '', url: 'https://www.disneyplus.com', note: '' },
     ],
   },
   {
     id: 3,
     name: 'Børn',
+    logins: [],
+  },
+  {
+    id: 4,
+    name: 'Bank & økonomi',
     logins: [],
   },
 ]
