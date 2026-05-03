@@ -22,7 +22,7 @@ import {
   DEFAULT_ROLES, DEFAULT_TODOS, DEFAULT_WEEK_EVENTS, DEFAULT_MONTH_EVENTS,
   DEFAULT_SHOPPING, DEFAULT_BUDGET_TOTAL, DEFAULT_BUDGET_POSTS,
   DEFAULT_PROCESSES, DEFAULT_AGREEMENTS, DEFAULT_MEETINGS,
-  DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT,
+  DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT, DEFAULT_SHOPPING_HISTORY,
 } from './data/defaults.js'
 
 const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter','Vault']
@@ -57,7 +57,8 @@ export default function App() {
   const [meetings,    setMeetings]    = useState(DEFAULT_MEETINGS)
   const [links,       setLinks]       = useState(DEFAULT_LINKS)
   const [contacts,    setContacts]    = useState(DEFAULT_CONTACTS)
-  const [vault,       setVault]       = useState(DEFAULT_VAULT)
+  const [vault,            setVault]            = useState(DEFAULT_VAULT)
+  const [shoppingHistory,  setShoppingHistory]  = useState(DEFAULT_SHOPPING_HISTORY)
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
@@ -105,6 +106,7 @@ export default function App() {
       setLinks(d.links             ?? DEFAULT_LINKS)
       setContacts(d.contacts       ?? DEFAULT_CONTACTS)
       setVault(d.vault             ?? DEFAULT_VAULT)
+      setShoppingHistory(d.shoppingHistory ?? DEFAULT_SHOPPING_HISTORY)
       setDataReady(true)
     })
     return unsub
@@ -123,7 +125,8 @@ export default function App() {
   const dMeetings    = useDebounce(meetings,    800)
   const dLinks       = useDebounce(links,       800)
   const dContacts    = useDebounce(contacts,    800)
-  const dVault       = useDebounce(vault,       800)
+  const dVault           = useDebounce(vault,           800)
+  const dShoppingHistory = useDebounce(shoppingHistory, 800)
 
   function saveToFirestore(patch) {
     if (!familyId || !dataReady) return
@@ -143,7 +146,8 @@ export default function App() {
   useEffect(() => { saveToFirestore({ meetings:    dMeetings    }) }, [dMeetings])
   useEffect(() => { saveToFirestore({ links:       dLinks       }) }, [dLinks])
   useEffect(() => { saveToFirestore({ contacts:    dContacts    }) }, [dContacts])
-  useEffect(() => { saveToFirestore({ vault:       dVault       }) }, [dVault])
+  useEffect(() => { saveToFirestore({ vault:           dVault           }) }, [dVault])
+  useEffect(() => { saveToFirestore({ shoppingHistory: dShoppingHistory }) }, [dShoppingHistory])
 
   // --- Render states ---
   if (user === undefined) {
@@ -170,7 +174,7 @@ export default function App() {
         {tab === 'Overblik'   && <Overblik   todos={todos} setTodos={setTodos} processes={processes} setProcesses={setProcesses} />}
         {tab === 'Domæner'    && <Domaener   roles={roles} setRoles={setRoles} />}
         {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} />}
-        {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} />}
+        {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} shoppingHistory={shoppingHistory} setShoppingHistory={setShoppingHistory} />}
         {tab === 'Økonomi'    && <Oekonomi   budgetTotal={budgetTotal} setBudgetTotal={setBudgetTotal} budgetPosts={budgetPosts} setBudgetPosts={setBudgetPosts} />}
         {tab === 'Processer'  && <Processer  processes={processes} setProcesses={setProcesses} />}
         {tab === 'Husmøde'    && <Husmøde    agreements={agreements} setAgreements={setAgreements} meetings={meetings} setMeetings={setMeetings} />}

@@ -150,6 +150,27 @@ export const DEFAULT_CONTACTS = [
   { id: 5, emoji: '🚗',   name: 'Vejhjælp — Falck',    sub: '70 10 20 30'      },
 ]
 
+// ---- Indkøbs-historik ----
+// Tæller hvor mange gange en vare er tilføjet — bruges til hurtigtilføj-chips
+// Start-værdier sikrer at faste varer vises fra dag 1
+export const DEFAULT_SHOPPING_HISTORY = {
+  'Havremælk':   5,
+  'Spegepølse':  5,
+  'Smør':        5,
+  'Ost':         5,
+  'Bananer':     5,
+  'Appelsiner':  5,
+  'Vaskepulver': 5,
+  'Mælk':        4,
+  'Brød':        4,
+  'Æg':          3,
+  'Yoghurt':     3,
+  'Pasta':       3,
+  'Tomat':       2,
+  'Løg':         2,
+  'Kartofler':   2,
+}
+
 // ---- Vault ----
 // categories: array af { id, name, logins: [{ id, name, username, password, url }] }
 export const DEFAULT_VAULT = [
