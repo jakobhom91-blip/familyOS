@@ -4,6 +4,7 @@ import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 
 import Domaener from './components/Domaener.jsx'
+import Vault from './components/Vault.jsx'
 import Header from './components/Header.jsx'
 import Nav from './components/Nav.jsx'
 import Overblik from './components/Overblik.jsx'
@@ -21,10 +22,10 @@ import {
   DEFAULT_ROLES, DEFAULT_TODOS, DEFAULT_WEEK_EVENTS, DEFAULT_MONTH_EVENTS,
   DEFAULT_SHOPPING, DEFAULT_BUDGET_TOTAL, DEFAULT_BUDGET_POSTS,
   DEFAULT_PROCESSES, DEFAULT_AGREEMENTS, DEFAULT_MEETINGS,
-  DEFAULT_LINKS, DEFAULT_CONTACTS,
+  DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT,
 } from './data/defaults.js'
 
-const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter']
+const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Kontakter','Vault']
 
 // Debounce hjælper — undgår at skrive til Firestore på hvert enkelt tastetryk
 function useDebounce(value, delay) {
@@ -56,6 +57,7 @@ export default function App() {
   const [meetings,    setMeetings]    = useState(DEFAULT_MEETINGS)
   const [links,       setLinks]       = useState(DEFAULT_LINKS)
   const [contacts,    setContacts]    = useState(DEFAULT_CONTACTS)
+  const [vault,       setVault]       = useState(DEFAULT_VAULT)
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
@@ -99,6 +101,7 @@ export default function App() {
       setMeetings(d.meetings       ?? DEFAULT_MEETINGS)
       setLinks(d.links             ?? DEFAULT_LINKS)
       setContacts(d.contacts       ?? DEFAULT_CONTACTS)
+      setVault(d.vault             ?? DEFAULT_VAULT)
       setDataReady(true)
     })
     return unsub
@@ -117,6 +120,7 @@ export default function App() {
   const dMeetings    = useDebounce(meetings,    800)
   const dLinks       = useDebounce(links,       800)
   const dContacts    = useDebounce(contacts,    800)
+  const dVault       = useDebounce(vault,       800)
 
   function saveToFirestore(patch) {
     if (!familyId || !dataReady) return
@@ -136,6 +140,7 @@ export default function App() {
   useEffect(() => { saveToFirestore({ meetings:    dMeetings    }) }, [dMeetings])
   useEffect(() => { saveToFirestore({ links:       dLinks       }) }, [dLinks])
   useEffect(() => { saveToFirestore({ contacts:    dContacts    }) }, [dContacts])
+  useEffect(() => { saveToFirestore({ vault:       dVault       }) }, [dVault])
 
   // --- Render states ---
   if (user === undefined) {
@@ -168,6 +173,7 @@ export default function App() {
         {tab === 'Husmøde'    && <Husmøde    agreements={agreements} setAgreements={setAgreements} meetings={meetings} setMeetings={setMeetings} />}
         {tab === 'Links'      && <Links      links={links} setLinks={setLinks} />}
         {tab === 'Kontakter'  && <Kontakter  contacts={contacts} setContacts={setContacts} />}
+        {tab === 'Vault'      && <Vault      vault={vault} setVault={setVault} />}
       </div>
     </div>
   )

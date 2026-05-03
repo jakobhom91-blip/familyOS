@@ -149,3 +149,27 @@ export const DEFAULT_CONTACTS = [
   { id: 4, emoji: '🏫',   name: 'Carls institution',   sub: 'Indsæt nummer'    },
   { id: 5, emoji: '🚗',   name: 'Vejhjælp — Falck',    sub: '70 10 20 30'      },
 ]
+
+// ---- Vault ----
+// categories: array af { id, name, logins: [{ id, name, username, password, url }] }
+export const DEFAULT_VAULT = [
+  {
+    id: 1,
+    name: 'Skole',
+    logins: [
+      { id: 1, name: 'Aula', username: '', password: '', url: 'https://www.aula.dk' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Streaming',
+    logins: [
+      { id: 1, name: 'Netflix', username: '', password: '', url: 'https://www.netflix.com' },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Børn',
+    logins: [],
+  },
+]
