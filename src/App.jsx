@@ -64,28 +64,39 @@ export default function App() {
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
-    // Håndter mobil redirect-result passivt (kører én gang ved page load)
-    getRedirectResult(auth).catch(err => console.error('Redirect result fejl:', err))
+    let unsub = () => {}
 
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null)
-        setFamilyId(null)
-        setDataReady(false)
-        return
+    async function init() {
+      // Vent på redirect-resultat FÆRDIGT inden auth listener startes
+      try {
+        await getRedirectResult(auth)
+      } catch (err) {
+        console.error('Redirect result fejl:', err)
       }
-      setUser(firebaseUser)
 
-      // Tjek om bruger har en familie
-      const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
-      if (userSnap.exists() && userSnap.data().familyId) {
-        setFamilyId(userSnap.data().familyId)
-      } else {
-        setFamilyId(null)
-        setDataReady(false)
-      }
-    })
-    return unsub
+      // Nu er redirect håndteret — start auth listener
+      unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!firebaseUser) {
+          setUser(null)
+          setFamilyId(null)
+          setDataReady(false)
+          return
+        }
+        setUser(firebaseUser)
+
+        // Tjek om bruger har en familie
+        const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
+        if (userSnap.exists() && userSnap.data().familyId) {
+          setFamilyId(userSnap.data().familyId)
+        } else {
+          setFamilyId(null)
+          setDataReady(false)
+        }
+      })
+    }
+
+    init()
+    return () => unsub()
   }, [])
 
   // --- 2. Lyt på Firestore data når familyId er klar ---
