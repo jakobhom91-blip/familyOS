@@ -17,7 +17,7 @@ export default function Header({ user, familyId }) {
   return (
     <header className="app-header">
       <div>
-        <div className="app-header__title">Familie OS</div>
+        <div className="app-header__title">♥ Familie OS ♥</div>
         <div className="app-header__sub">
           {familyId ? `Kode: ${familyId}` : 'Jakob & Camilla'}
         </div>
