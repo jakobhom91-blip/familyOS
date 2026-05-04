@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
-import { auth, db } from './firebase.js'
+import { auth, db, authReadyPromise } from './firebase.js'
 
 import Domaener from './components/Domaener.jsx'
 import Vault from './components/Vault.jsx'
@@ -67,28 +67,38 @@ export default function App() {
     let unsub = () => {}
 
     async function init() {
-      // Vent på redirect-resultat FÆRDIGT inden auth listener startes
+      // Vent på at persistence er sat FØR vi gør noget med auth
+      await authReadyPromise
+
+      // Vent på evt. redirect-resultat
       try {
         await getRedirectResult(auth)
       } catch (err) {
         console.error('Redirect result fejl:', err)
       }
 
-      // Nu er redirect håndteret — start auth listener
+      // Start auth listener
       unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (!firebaseUser) {
-          setUser(null)
-          setFamilyId(null)
-          setDataReady(false)
-          return
-        }
-        setUser(firebaseUser)
+        try {
+          if (!firebaseUser) {
+            setUser(null)
+            setFamilyId(null)
+            setDataReady(false)
+            return
+          }
+          setUser(firebaseUser)
 
-        // Tjek om bruger har en familie
-        const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
-        if (userSnap.exists() && userSnap.data().familyId) {
-          setFamilyId(userSnap.data().familyId)
-        } else {
+          // Tjek om bruger har en familie
+          const userSnap = await getDoc(doc(db, 'users', firebaseUser.uid))
+          if (userSnap.exists() && userSnap.data().familyId) {
+            setFamilyId(userSnap.data().familyId)
+          } else {
+            setFamilyId(null)
+            setDataReady(false)
+          }
+        } catch (err) {
+          console.error('Auth state fejl:', err)
+          setUser(null)
           setFamilyId(null)
           setDataReady(false)
         }

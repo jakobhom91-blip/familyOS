@@ -1,19 +1,28 @@
 import { signInWithPopup, signInWithRedirect } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase.js'
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
 export default function LoginScreen() {
   function handleLogin() {
-    if (isMobile) {
-      signInWithRedirect(auth, googleProvider)
-    } else {
-      signInWithPopup(auth, googleProvider)
-        .catch(err => {
+    // Prøv popup først — virker på Android Chrome når trigget direkte fra klik
+    // Falder tilbage til redirect hvis popup er blokeret
+    signInWithPopup(auth, googleProvider)
+      .catch(err => {
+        if (
+          err.code === 'auth/popup-blocked' ||
+          err.code === 'auth/popup-closed-by-user' ||
+          err.code === 'auth/cancelled-popup-request'
+        ) {
+          // Popup blokeret — brug redirect i stedet
+          signInWithRedirect(auth, googleProvider)
+            .catch(e => {
+              console.error('Redirect login fejlede:', e)
+              alert('Login fejlede. Prøv igen.')
+            })
+        } else {
           console.error('Login fejlede:', err)
           alert('Login fejlede. Prøv igen.')
-        })
-    }
+        }
+      })
   }
 
   return (

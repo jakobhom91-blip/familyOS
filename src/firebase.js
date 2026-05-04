@@ -11,11 +11,13 @@ const firebaseConfig = {
   appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-const app = initializeApp(firebaseConfig)
+const app  = initializeApp(firebaseConfig)
+const auth = getAuth(app)
 
-export const auth = getAuth(app)
-setPersistence(auth, browserLocalPersistence)
+// Sæt persistence — eksporter promise så App.jsx kan vente på det
+export const authReadyPromise = setPersistence(auth, browserLocalPersistence)
   .catch(err => console.error('Persistence fejl:', err))
 
+export { auth }
 export const googleProvider = new GoogleAuthProvider()
 export const db = getFirestore(app)
