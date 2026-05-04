@@ -23,6 +23,7 @@ import {
   DEFAULT_SHOPPING, DEFAULT_BUDGET_TOTAL, DEFAULT_BUDGET_POSTS,
   DEFAULT_PROCESSES, DEFAULT_AGREEMENTS, DEFAULT_MEETINGS,
   DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT, DEFAULT_SHOPPING_HISTORY,
+  DEFAULT_VAULT_PIN,
 } from './data/defaults.js'
 
 const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Vault']
@@ -59,6 +60,7 @@ export default function App() {
   const [contacts,    setContacts]    = useState(DEFAULT_CONTACTS)
   const [vault,            setVault]            = useState(DEFAULT_VAULT)
   const [shoppingHistory,  setShoppingHistory]  = useState(DEFAULT_SHOPPING_HISTORY)
+  const [vaultPin,         setVaultPin]         = useState(DEFAULT_VAULT_PIN)
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
@@ -107,6 +109,7 @@ export default function App() {
       setContacts(d.contacts       ?? DEFAULT_CONTACTS)
       setVault(d.vault             ?? DEFAULT_VAULT)
       setShoppingHistory(d.shoppingHistory ?? DEFAULT_SHOPPING_HISTORY)
+      setVaultPin(d.vaultPin       ?? DEFAULT_VAULT_PIN)
       setDataReady(true)
     })
     return unsub
@@ -127,6 +130,7 @@ export default function App() {
   const dContacts    = useDebounce(contacts,    800)
   const dVault           = useDebounce(vault,           800)
   const dShoppingHistory = useDebounce(shoppingHistory, 800)
+  const dVaultPin        = useDebounce(vaultPin,        800)
 
   function saveToFirestore(patch) {
     if (!familyId || !dataReady) return
@@ -148,6 +152,7 @@ export default function App() {
   useEffect(() => { saveToFirestore({ contacts:    dContacts    }) }, [dContacts])
   useEffect(() => { saveToFirestore({ vault:           dVault           }) }, [dVault])
   useEffect(() => { saveToFirestore({ shoppingHistory: dShoppingHistory }) }, [dShoppingHistory])
+  useEffect(() => { saveToFirestore({ vaultPin:        dVaultPin        }) }, [dVaultPin])
 
   // --- Render states ---
   if (user === undefined) {
@@ -179,7 +184,7 @@ export default function App() {
         {tab === 'Processer'  && <Processer  processes={processes} setProcesses={setProcesses} />}
         {tab === 'Husmøde'    && <Husmøde    agreements={agreements} setAgreements={setAgreements} meetings={meetings} setMeetings={setMeetings} />}
         {tab === 'Links'      && <Links      links={links} setLinks={setLinks} />}
-        {tab === 'Vault'      && <Vault      vault={vault} setVault={setVault} />}
+        {tab === 'Vault'      && <Vault      vault={vault} setVault={setVault} vaultPin={vaultPin} setVaultPin={setVaultPin} />}
       </div>
     </div>
   )

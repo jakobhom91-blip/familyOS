@@ -171,6 +171,9 @@ export const DEFAULT_SHOPPING_HISTORY = {
   'Kartofler':   2,
 }
 
+// ---- Vault PIN ----
+export const DEFAULT_VAULT_PIN = ''
+
 // ---- Vault ----
 export const DEFAULT_VAULT = [
   {

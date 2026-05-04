@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 // ---- Brand farver og favicon ----
 const BRAND_COLORS = {
@@ -75,6 +75,89 @@ const COPY_SVG = (
     <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
   </svg>
 )
+
+// ---- PIN Modal ----
+function PinModal({ title, onConfirm, onCancel, error }) {
+  const [val, setVal] = useState('')
+  const inputRef = useRef(null)
+
+  return (
+    <div style={pinStyles.overlay}>
+      <div style={pinStyles.card}>
+        <div style={pinStyles.title}>🔒 {title}</div>
+        <p style={pinStyles.sub}>Indtast Vault PIN for at fortsætte</p>
+        <input
+          ref={inputRef}
+          style={pinStyles.input}
+          type="password"
+          inputMode="numeric"
+          maxLength={8}
+          placeholder="••••"
+          value={val}
+          onChange={e => setVal(e.target.value.replace(/\D/g, ''))}
+          onKeyDown={e => e.key === 'Enter' && val && onConfirm(val)}
+          autoFocus
+        />
+        {error && <p style={pinStyles.error}>{error}</p>}
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button style={fStyle.btnSave} onClick={() => val && onConfirm(val)} disabled={!val}>
+            Bekræft
+          </button>
+          <button style={fStyle.btnCancel} onClick={onCancel}>
+            Annuller
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---- Opret PIN Modal ----
+function CreatePinModal({ onSave, onCancel }) {
+  const [pin1, setPin1] = useState('')
+  const [pin2, setPin2] = useState('')
+  const [error, setError] = useState('')
+
+  function handleSave() {
+    if (pin1.length < 4) { setError('PIN skal være mindst 4 cifre'); return }
+    if (pin1 !== pin2) { setError('PIN-koderne matcher ikke'); return }
+    onSave(pin1)
+  }
+
+  return (
+    <div style={pinStyles.overlay}>
+      <div style={pinStyles.card}>
+        <div style={pinStyles.title}>🔒 Opret Vault PIN</div>
+        <p style={pinStyles.sub}>Vælg en PIN-kode (4-8 cifre) der beskyttes sletning i Vault</p>
+        <input
+          style={pinStyles.input}
+          type="password"
+          inputMode="numeric"
+          maxLength={8}
+          placeholder="Vælg PIN"
+          value={pin1}
+          onChange={e => setPin1(e.target.value.replace(/\D/g, ''))}
+          autoFocus
+        />
+        <input
+          style={{ ...pinStyles.input, marginTop: 8 }}
+          type="password"
+          inputMode="numeric"
+          maxLength={8}
+          placeholder="Gentag PIN"
+          value={pin2}
+          onChange={e => setPin2(e.target.value.replace(/\D/g, ''))}
+          onKeyDown={e => e.key === 'Enter' && handleSave()}
+        />
+        {error && <p style={pinStyles.error}>{error}</p>}
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button style={fStyle.btnSave} onClick={handleSave} disabled={!pin1 || !pin2}>Gem PIN</button>
+          <button style={fStyle.btnCancel} onClick={onCancel}>Annuller</button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ---- Login formular ----
 const EMPTY_LOGIN = { name: '', username: '', password: '', url: '', note: '' }
@@ -181,7 +264,7 @@ function LoginCard({ login, onEdit, onDelete }) {
 }
 
 // ---- Kategori-kort ----
-function CategoryCard({ cat, onUpdateLogins, onRename, onDelete }) {
+function CategoryCard({ cat, onUpdateLogins, onRename, onDelete, requestPin }) {
   const [showNew,   setShowNew]   = useState(false)
   const [renaming,  setRenaming]  = useState(false)
   const [nameVal,   setNameVal]   = useState(cat.name)
@@ -196,7 +279,11 @@ function CategoryCard({ cat, onUpdateLogins, onRename, onDelete }) {
   }
 
   function deleteLogin(id) {
-    onUpdateLogins(cat.logins.filter(l => l.id !== id))
+    requestPin(() => onUpdateLogins(cat.logins.filter(l => l.id !== id)))
+  }
+
+  function handleDeleteCategory() {
+    requestPin(() => onDelete())
   }
 
   function saveRename() {
@@ -220,7 +307,7 @@ function CategoryCard({ cat, onUpdateLogins, onRename, onDelete }) {
           <h3 style={{ flex: 1, fontSize: 15, fontFamily: 'DM Serif Display, serif', color: 'var(--deep-petrol)', margin: 0 }}>{cat.name}</h3>
         )}
         <button style={catBtn} onClick={() => setRenaming(v => !v)} title="Omdøb">✎</button>
-        <button style={{ ...catBtn, color: 'var(--ember)' }} onClick={onDelete} title="Slet kategori">×</button>
+        <button style={{ ...catBtn, color: 'var(--ember)' }} onClick={handleDeleteCategory} title="Slet kategori">×</button>
       </div>
 
       {/* Login-kort i 2x2 grid */}
@@ -257,9 +344,43 @@ function CategoryCard({ cat, onUpdateLogins, onRename, onDelete }) {
 }
 
 // ---- Vault root ----
-export default function Vault({ vault, setVault }) {
-  const [showNewCat, setShowNewCat] = useState(false)
-  const [newCatName, setNewCatName] = useState('')
+export default function Vault({ vault, setVault, vaultPin, setVaultPin }) {
+  const [showNewCat,    setShowNewCat]    = useState(false)
+  const [newCatName,    setNewCatName]    = useState('')
+  const [pinModal,      setPinModal]      = useState(null)
+  const [showCreatePin, setShowCreatePin] = useState(false)
+  const [showResetPin,  setShowResetPin]  = useState(false)
+  const pendingAction = useRef(null)
+
+  // Åbn PIN-modal — callback gemmes og køres når PIN er korrekt
+  function requestPin(action) {
+    if (!vaultPin) {
+      // Ingen PIN sat endnu — vis opret-flow
+      pendingAction.current = action
+      setShowCreatePin(true)
+      return
+    }
+    pendingAction.current = action
+    setPinModal({ error: '' })
+  }
+
+  function handlePinConfirm(entered) {
+    if (entered === vaultPin) {
+      setPinModal(null)
+      pendingAction.current?.()
+      pendingAction.current = null
+    } else {
+      setPinModal({ error: 'Forkert PIN. Prøv igen.' })
+    }
+  }
+
+  function handleCreatePin(pin) {
+    setVaultPin(pin)
+    setShowCreatePin(false)
+    // Kør den ventende handling efter PIN er sat
+    pendingAction.current?.()
+    pendingAction.current = null
+  }
 
   function addCategory() {
     if (!newCatName.trim()) return
@@ -282,11 +403,52 @@ export default function Vault({ vault, setVault }) {
 
   return (
     <div>
+      {/* PIN modals */}
+      {pinModal && (
+        <PinModal
+          title="Bekræft sletning"
+          error={pinModal.error}
+          onConfirm={handlePinConfirm}
+          onCancel={() => { setPinModal(null); pendingAction.current = null }}
+        />
+      )}
+      {showCreatePin && (
+        <CreatePinModal
+          onSave={handleCreatePin}
+          onCancel={() => { setShowCreatePin(false); pendingAction.current = null }}
+        />
+      )}
+      {showResetPin && (
+        <PinModal
+          title="Indtast nuværende PIN"
+          error={showResetPin.error || ''}
+          onConfirm={entered => {
+            if (entered === vaultPin) {
+              setShowResetPin(false)
+              setVaultPin('')
+              setTimeout(() => setShowCreatePin(true), 100)
+            } else {
+              setShowResetPin({ error: 'Forkert PIN' })
+            }
+          }}
+          onCancel={() => setShowResetPin(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="section" style={{ marginBottom: 0 }}>
         <div className="section__header">
           <div className="section__title">Vault</div>
-          <button className="section__add-btn" onClick={() => setShowNewCat(v => !v)} title="Ny kategori">+</button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              style={{ fontSize: 11, color: 'var(--muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+              onClick={() => vaultPin ? setShowResetPin({}) : setShowCreatePin(true)}
+              title={vaultPin ? 'Skift PIN' : 'Opret PIN'}
+            >
+              {vaultPin ? '🔒 Skift PIN' : '🔓 Opret PIN'}
+            </button>
+            <button className="section__add-btn" onClick={() => setShowNewCat(v => !v)} title="Ny kategori">+</button>
+          </div>
         </div>
       </div>
 
@@ -315,6 +477,7 @@ export default function Vault({ vault, setVault }) {
             onUpdateLogins={logins => updateLogins(cat.id, logins)}
             onRename={name => renameCategory(cat.id, name)}
             onDelete={() => deleteCategory(cat.id)}
+            requestPin={requestPin}
           />
         ))}
       </div>
@@ -356,4 +519,25 @@ const cardStyle = {
 const catBtn = {
   background: 'none', border: 'none', cursor: 'pointer',
   color: 'var(--muted)', fontSize: 14, padding: '2px 6px', borderRadius: 5,
+}
+
+const pinStyles = {
+  overlay: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, padding: 24,
+  },
+  card: {
+    background: '#fff', borderRadius: 16, padding: '32px 28px',
+    maxWidth: 360, width: '100%', display: 'flex', flexDirection: 'column', gap: 12,
+    boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+  },
+  title: { fontSize: 18, fontWeight: 700, color: 'var(--deep-petrol)' },
+  sub: { fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 },
+  input: {
+    padding: '12px 14px', borderRadius: 8, border: '1.5px solid var(--border)',
+    fontSize: 20, textAlign: 'center', letterSpacing: 6, fontFamily: 'monospace',
+    outline: 'none', width: '100%', boxSizing: 'border-box',
+  },
+  error: { color: 'var(--ember)', fontSize: 13, margin: 0 },
 }
