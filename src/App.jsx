@@ -154,7 +154,12 @@ export default function App() {
   useEffect(() => { saveToFirestore({ shoppingHistory: dShoppingHistory }) }, [dShoppingHistory])
   useEffect(() => { saveToFirestore({ vaultPin:        dVaultPin        }) }, [dVaultPin])
 
-  // --- Render states ---
+  // Ryd afkrydsede indkøbsvarer når man skifter væk fra Indkøb-fanen
+  useEffect(() => {
+    if (tab !== 'Indkøb') {
+      setShopping(prev => prev.filter(i => !i.done))
+    }
+  }, [tab])
   if (user === undefined) {
     return <div style={loadingStyle}>Indlæser...</div>
   }
