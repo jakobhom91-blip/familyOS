@@ -126,8 +126,8 @@ export default function Overblik({ todos, setTodos, processes, setProcesses }) {
         setProcesses={setProcesses}
       />
 
-      {/* Jakob & Camilla side om side */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      {/* Jakob & Camilla under hinanden */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <TodoList
           who="jakob"
           items={todos.jakob}
