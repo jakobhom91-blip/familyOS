@@ -82,7 +82,7 @@ h1, h2, h3 {
 
 /* ---- Layout ---- */
 .app-header {
-  background: #1E6B9E;
+  background: var(--deep-petrol);
   color: var(--lys-glod);
   padding: 18px 20px 14px;
   display: flex;
