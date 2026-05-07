@@ -174,6 +174,18 @@ export const DEFAULT_SHOPPING_HISTORY = {
 // ---- Vault PIN ----
 export const DEFAULT_VAULT_PIN = ''
 
+// ---- Tilbagevendende kalenderbegivenheder ----
+// days: array af 'man'|'tir'|'ons'|'tor'|'fre'|'lor'|'son'
+export const DEFAULT_RECURRENCIES = [
+  { id: 1, label: 'Carl — basket',    time: '16:00', owner: 'jakob', days: ['man', 'tor'] },
+  { id: 2, label: 'Arthur — fodbold', time: '16:00', owner: 'jakob', days: ['ons'] },
+]
+
+// ---- Uge-overrides ----
+// Nøgle: '{år}-W{uge}-{recurrencyId}-{dag}'
+// Bruges til at sætte ansvarlig per konkret ugedag-instans
+export const DEFAULT_WEEK_OVERRIDES = {}
+
 // ---- Vault ----
 export const DEFAULT_VAULT = [
   {

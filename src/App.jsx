@@ -23,7 +23,7 @@ import {
   DEFAULT_SHOPPING, DEFAULT_BUDGET_TOTAL, DEFAULT_BUDGET_POSTS,
   DEFAULT_PROCESSES, DEFAULT_AGREEMENTS, DEFAULT_MEETINGS,
   DEFAULT_LINKS, DEFAULT_CONTACTS, DEFAULT_VAULT, DEFAULT_SHOPPING_HISTORY,
-  DEFAULT_VAULT_PIN,
+  DEFAULT_VAULT_PIN, DEFAULT_RECURRENCIES, DEFAULT_WEEK_OVERRIDES,
 } from './data/defaults.js'
 
 const TABS = ['Overblik','Domæner','Kalender','Indkøb','Økonomi','Processer','Husmøde','Links','Vault']
@@ -61,6 +61,8 @@ export default function App() {
   const [vault,            setVault]            = useState(DEFAULT_VAULT)
   const [shoppingHistory,  setShoppingHistory]  = useState(DEFAULT_SHOPPING_HISTORY)
   const [vaultPin,         setVaultPin]         = useState(DEFAULT_VAULT_PIN)
+  const [recurrencies,     setRecurrencies]     = useState(DEFAULT_RECURRENCIES)
+  const [weekOverrides,    setWeekOverrides]    = useState(DEFAULT_WEEK_OVERRIDES)
 
   // --- 1. Lyt på auth-tilstand ---
   useEffect(() => {
@@ -131,6 +133,8 @@ export default function App() {
       setVault(d.vault             ?? DEFAULT_VAULT)
       setShoppingHistory(d.shoppingHistory ?? DEFAULT_SHOPPING_HISTORY)
       setVaultPin(d.vaultPin       ?? DEFAULT_VAULT_PIN)
+      setRecurrencies(d.recurrencies   ?? DEFAULT_RECURRENCIES)
+      setWeekOverrides(d.weekOverrides  ?? DEFAULT_WEEK_OVERRIDES)
       setDataReady(true)
     })
     return unsub
@@ -152,6 +156,8 @@ export default function App() {
   const dVault           = useDebounce(vault,           800)
   const dShoppingHistory = useDebounce(shoppingHistory, 800)
   const dVaultPin        = useDebounce(vaultPin,        800)
+  const dRecurrencies    = useDebounce(recurrencies,    800)
+  const dWeekOverrides   = useDebounce(weekOverrides,   800)
 
   function saveToFirestore(patch) {
     if (!familyId || !dataReady) return
@@ -174,6 +180,8 @@ export default function App() {
   useEffect(() => { saveToFirestore({ vault:           dVault           }) }, [dVault])
   useEffect(() => { saveToFirestore({ shoppingHistory: dShoppingHistory }) }, [dShoppingHistory])
   useEffect(() => { saveToFirestore({ vaultPin:        dVaultPin        }) }, [dVaultPin])
+  useEffect(() => { saveToFirestore({ recurrencies:    dRecurrencies    }) }, [dRecurrencies])
+  useEffect(() => { saveToFirestore({ weekOverrides:   dWeekOverrides   }) }, [dWeekOverrides])
 
   // Ryd afkrydsede indkøbsvarer når man skifter væk fra Indkøb-fanen
   useEffect(() => {
@@ -204,7 +212,7 @@ export default function App() {
       <div className="app-main">
         {tab === 'Overblik'   && <Overblik   todos={todos} setTodos={setTodos} processes={processes} setProcesses={setProcesses} />}
         {tab === 'Domæner'    && <Domaener   roles={roles} setRoles={setRoles} />}
-        {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} />}
+        {tab === 'Kalender'   && <Kalender   weekEvents={weekEvents} setWeekEvents={setWeekEvents} monthEvents={monthEvents} setMonthEvents={setMonthEvents} recurrencies={recurrencies} setRecurrencies={setRecurrencies} weekOverrides={weekOverrides} setWeekOverrides={setWeekOverrides} />}
         {tab === 'Indkøb'     && <Indkoeb    shopping={shopping} setShopping={setShopping} shoppingHistory={shoppingHistory} setShoppingHistory={setShoppingHistory} />}
         {tab === 'Økonomi'    && <Oekonomi   budgetTotal={budgetTotal} setBudgetTotal={setBudgetTotal} budgetPosts={budgetPosts} setBudgetPosts={setBudgetPosts} />}
         {tab === 'Processer'  && <Processer  processes={processes} setProcesses={setProcesses} />}
