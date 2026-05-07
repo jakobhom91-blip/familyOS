@@ -319,7 +319,33 @@ function WeekView({ weekEvents, setWeekEvents, recurrencies, weekOverrides, setW
   }
 
   function setResponsible(key, responsible) {
-    setWeekOverrides(prev => ({ ...prev, [key]: { responsible } }))
+    setWeekOverrides(prev => ({ ...prev, [key]: { ...prev[key], responsible } }))
+  }
+
+  function getOrderKey(dayKey) {
+    return `${weekYear}-W${weekNum}-order-${dayKey}`
+  }
+
+  function getOrderedItems(dayKey, dayRecurrencies, dayEvents) {
+    const orderKey = getOrderKey(dayKey)
+    const savedOrder = weekOverrides[orderKey]?.order
+    const recItems  = dayRecurrencies.map(r => ({ kind: 'rec', id: `rec-${r.id}`, data: r }))
+    const evtItems  = dayEvents.map(e => ({ kind: 'evt', id: `evt-${e.id}`, data: e }))
+    const all       = [...recItems, ...evtItems]
+    if (!savedOrder) return all
+    const map = Object.fromEntries(all.map(i => [i.id, i]))
+    const ordered = savedOrder.map(id => map[id]).filter(Boolean)
+    const rest = all.filter(i => !savedOrder.includes(i.id))
+    return [...ordered, ...rest]
+  }
+
+  function moveItem(dayKey, items, fromIdx, toIdx) {
+    if (toIdx < 0 || toIdx >= items.length) return
+    const newOrder = items.map(i => i.id)
+    const [moved] = newOrder.splice(fromIdx, 1)
+    newOrder.splice(toIdx, 0, moved)
+    const orderKey = getOrderKey(dayKey)
+    setWeekOverrides(prev => ({ ...prev, [orderKey]: { ...prev[orderKey], order: newOrder } }))
   }
 
   function addEvent(dayDate, eventData) {
@@ -360,12 +386,6 @@ function WeekView({ weekEvents, setWeekEvents, recurrencies, weekOverrides, setW
           const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
           const isToday = date.toDateString() === now.toDateString()
 
-          // Recurring events for denne dag
-          const dayRecurrencies = recurrencies.filter(r => r.days.includes(dayKey))
-
-          // Engangshændelser for denne dag
-          const dayEvents = weekEvents.filter(e => e.date === dateStr)
-
           return (
             <div key={dayKey} className="week-col">
               <div className="week-col__head">
@@ -376,42 +396,66 @@ function WeekView({ weekEvents, setWeekEvents, recurrencies, weekOverrides, setW
               </div>
 
               <div className="week-col__body">
-                {/* Recurring events */}
-                {dayRecurrencies.map(rec => {
-                  const ovKey      = getOverrideKey(rec.id, dayKey)
-                  const override   = weekOverrides[ovKey]
-                  const responsible = override?.responsible || null
-                  const ownerCls   = `week-event--${rec.owner} week-event--recurring`
+                {(() => {
+                  const dayRecurrencies = recurrencies.filter(r => r.days.includes(dayKey))
+                  const dayEvents = weekEvents.filter(e => e.date === dateStr)
+                  const items = getOrderedItems(dayKey, dayRecurrencies, dayEvents)
 
-                  return (
-                    <div
-                      key={rec.id}
-                      className={`week-event ${ownerCls}`}
-                      onClick={() => setModal({ type: 'event', event: { ...rec, responsible }, ovKey, isRecurring: true, dayLabel: `${DAY_NAMES[idx]} ${date.getDate()}. ${MONTH_NAMES[date.getMonth()]}` })}
-                    >
-                      <div className="week-event__label">↻ {rec.label}</div>
-                      {rec.time && <div className="week-event__time">{rec.time}</div>}
-                      {responsible && responsible !== 'Ingen' && (
-                        <div className="week-event__responsible">→ {responsible}</div>
-                      )}
-                    </div>
-                  )
-                })}
+                  return items.map((item, itemIdx) => {
+                    const isRec = item.kind === 'rec'
+                    const rec   = isRec ? item.data : null
+                    const ev    = isRec ? null : item.data
+                    const ovKey = isRec ? getOverrideKey(rec.id, dayKey) : null
+                    const override    = isRec ? weekOverrides[ovKey] : null
+                    const responsible = isRec
+                      ? (override?.responsible || null)
+                      : (ev.responsible || null)
+                    const ownerCls = isRec
+                      ? `week-event--${rec.owner} week-event--recurring`
+                      : `week-event--${ev.owner}`
 
-                {/* Engangsevents */}
-                {dayEvents.map(ev => (
-                  <div
-                    key={ev.id}
-                    className={`week-event week-event--${ev.owner}`}
-                    onClick={() => setModal({ type: 'event', event: { ...ev, responsible: ev.responsible || 'Ingen' }, isRecurring: false, eventId: ev.id, dayLabel: `${DAY_NAMES[idx]} ${date.getDate()}. ${MONTH_NAMES[date.getMonth()]}` })}
-                  >
-                    <div className="week-event__label">{ev.label}</div>
-                    {ev.time && <div className="week-event__time">{ev.time}</div>}
-                    {ev.responsible && ev.responsible !== 'Ingen' && (
-                      <div className="week-event__responsible">→ {ev.responsible}</div>
-                    )}
-                  </div>
-                ))}
+                    return (
+                      <div key={item.id} style={{ position: 'relative' }} className="week-event-wrap">
+                        <div
+                          className={`week-event ${ownerCls}`}
+                          onClick={() => {
+                            if (isRec) {
+                              setModal({ type: 'event', event: { ...rec, responsible }, ovKey, isRecurring: true, dayLabel: `${DAY_NAMES[idx]} ${date.getDate()}. ${MONTH_NAMES[date.getMonth()]}` })
+                            } else {
+                              setModal({ type: 'event', event: { ...ev, responsible: ev.responsible || 'Ingen' }, isRecurring: false, eventId: ev.id, dayLabel: `${DAY_NAMES[idx]} ${date.getDate()}. ${MONTH_NAMES[date.getMonth()]}` })
+                            }
+                          }}
+                          style={{ paddingRight: 20 }}
+                        >
+                          <div className="week-event__label">{isRec ? `↻ ${rec.label}` : ev.label}</div>
+                          {(isRec ? rec.time : ev.time) && (
+                            <div className="week-event__time">{isRec ? rec.time : ev.time}</div>
+                          )}
+                          {responsible && responsible !== 'Ingen' && (
+                            <div className="week-event__responsible">→ {responsible}</div>
+                          )}
+                        </div>
+                        {/* Pile-knapper */}
+                        <div style={{ position: 'absolute', right: 2, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {itemIdx > 0 && (
+                            <button
+                              style={arrowBtn}
+                              onClick={e => { e.stopPropagation(); moveItem(dayKey, items, itemIdx, itemIdx - 1) }}
+                              title="Flyt op"
+                            >▲</button>
+                          )}
+                          {itemIdx < items.length - 1 && (
+                            <button
+                              style={arrowBtn}
+                              onClick={e => { e.stopPropagation(); moveItem(dayKey, items, itemIdx, itemIdx + 1) }}
+                              title="Flyt ned"
+                            >▼</button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
 
                 {/* Tilføj knap */}
                 <button
@@ -564,3 +608,4 @@ const inp = { padding: '7px 10px', borderRadius: 8, border: '1px solid var(--bor
 const btnSave   = { padding: '7px 18px', borderRadius: 8, background: 'var(--deep-petrol)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }
 const btnCancel = { padding: '7px 14px', borderRadius: 8, background: '#fff', color: 'var(--muted)', border: '1px solid var(--border)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }
 const btnDelete = { padding: '7px 14px', borderRadius: 8, background: '#fff', color: 'var(--ember)', border: '1px solid var(--ember)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', marginLeft: 'auto' }
+const arrowBtn  = { background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 3, cursor: 'pointer', color: '#fff', fontSize: 8, padding: '1px 3px', lineHeight: 1, display: 'block' }
